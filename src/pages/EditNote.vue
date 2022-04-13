@@ -220,20 +220,34 @@ export default {
       // }
 
 
-      if (this.hash)
-        msg = await posts.submit(
+      if (this.hash) {
+        try {
+          msg = await posts.submit(
           this.account.address, 'amend', post_content,
           {ref: this.hash,
            channel: this.channel,
            api_server: this.api_server,
            account: this.account})
-      else
-        msg = await posts.submit(
+        } catch (error) {
+          this.saving = false
+          console.log("error", error.message)
+          this.$q.notify({
+            message: error.message,
+            color: "negative"
+          })
+        }
+      }
+      else {
+        try {
+          msg = await posts.submit(
           this.account.address, 'note', post_content,
           {channel: this.channel,
            api_server: this.api_server,
            account: this.account})
-
+        } catch {
+          this.saving = false
+        }
+      }
       this.processing = true
       await sleep(200)
       this.processing = false
