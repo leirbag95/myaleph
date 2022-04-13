@@ -98,7 +98,6 @@ export default {
       'network_id',
       'api_server',
       'channel',
-      'account',
       'notebooks'
     ]),
     notebook_options() {

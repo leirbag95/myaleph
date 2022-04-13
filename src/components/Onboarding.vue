@@ -32,11 +32,11 @@
         </div>
         <div  class="q-gutter-sm q-pt-xl q-pt-sm-none">
           <p>
-            Do you have an account already?
+            Do you have a wallet already?
           </p>
           <p class="q-gutter-sm">
-            <q-btn push rounded color="primary" label="Yes, log me in" @click="$emit('close')" :to="{'name': 'login'}" />
-            <q-btn push rounded color="secondary" label="No, please sign me up" @click="slide='signup'">
+            <q-btn push rounded color="primary" label="Yes, connect" @click="web3Connect()"/>
+            <q-btn push rounded color="secondary" label="Download it" @click="slide='signup'">
               <q-tooltip>Takes a few seconds!</q-tooltip>
             </q-btn>
           </p>
@@ -115,6 +115,8 @@
 <script>
 import { mapState } from 'vuex'
 import { nuls2, neo, ethereum } from 'aleph-js'
+import { ethers } from 'ethers'
+
 export default {
   name: 'onboarding',
   computed: {
@@ -158,10 +160,40 @@ export default {
       } else if (this.account_type == 'ETH') {
         this.new_account = await ethereum.new_account()
       }
+    },
+    async update_eth_account () {
+      let account = await ethereum.from_provider(window.ethereum)
+      this.$store.commit('set_account', account)
+    },
+    async web3Connect () {
+      let provider = null
+
+      if (window.ethereum) {
+        await window.ethereum.enable()
+
+        provider = new ethers.providers.Web3Provider(window.ethereum)
+        await this.update_eth_account()
+      } else if (window.web3) {
+        provider = new ethers.providers.Web3Provider(window.web3.currentProvider)
+        await this.update_eth_account()
+      } else {
+        this.$q.notify({
+          type: 'negative',
+          message: 'Non-Ethereum browser detected. You should consider trying MetaMask!'
+        })
+        console.warn('Non-Ethereum browser detected. You should consider trying MetaMask!')
+        return 
+      }
+
+      window.ethereum.on('accountsChanged', async (account) => {
+        await this.update_eth_account()
+      })
+
+      this.$emit('close')
     }
   },
   async mounted() {
-    await this.generate()
+    this.$store.dispatch('connect_provider')
   }
 }
 </script>

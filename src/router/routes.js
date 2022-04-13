@@ -45,11 +45,6 @@ const routes = [
         props: true
       },
       {
-        name: 'login',
-        path: 'login',
-        component: () => import('pages/Login.vue')
-      },
-      {
         path: 'n',
         component: () => import('layouts/Notes.vue'),
         children: [
